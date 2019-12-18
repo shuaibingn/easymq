@@ -1,0 +1,17 @@
+.idea
+.DS_Store
+__pycache__/
+.vscode
+.log
+venv/
+*.py[cod]
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+sdist/
+eggs/
+.eggs/
+lib/
+lib64/
+dist/
