@@ -1,67 +1,63 @@
-import stomp
 import logging
+import stomp
 
 
 class Listener(stomp.ConnectionListener):
 
-    def __init__(self, mq_username, mq_password, mq_destination: list, connection, listener=None, wait=False):
+    def __init__(self, mq_username, mq_password, host_and_ports: list, use_ssl=True, heartbeat=(60000, 60000), listener=None, wait=True):
         self.mq_username = mq_username
         self.mq_password = mq_password
-        self.mq_destination = mq_destination
-        self.connection = connection
+        self.host_and_ports = host_and_ports
+        self.use_ssl = use_ssl
+        self.heartbeat = heartbeat
         self.listener = listener if listener else Listener
         self.wait = wait
 
     def on_connected(self, headers, body):
-        logging.info(f"mq on connected: {headers}, {body}")
+        logging.info(f"[mq on connected]: {headers}, {body}")
 
     def on_message(self, headers, message):
         pass
 
     def on_error(self, headers, body):
-        logging.info(f"mq on error: {headers}, {body}")
+        logging.info(f"[mq on error]: {headers}, {body}")
 
     def on_disconnected(self):
-        logging.info("mq on disconnected")
-        self.connection.disconnect()
-        c = Connection(self.mq_username, self.mq_password, self.mq_destination, self.connection, self.listener)
-        c.connect(wait=self.wait)
+        logging.info("[mq on disconnected]")
+        Connection(self.mq_username, self.mq_password, self.host_and_ports, self.use_ssl, self.heartbeat, self.listener, self.wait)
 
 
 class Connection(object):
 
-    def __init__(self, mq_username, mq_password, host_and_ports: list, mq_destination: list, use_ssl=True, listener=None):
+    def __init__(self, mq_username, mq_password, host_and_ports: list, use_ssl=True, heartbeat=(60000, 60000), listener=None, wait=True):
         self.mq_username = mq_username
         self.mq_password = mq_password
-        self.mq_destination = mq_destination
-        self.connection = stomp.Connection(
-            host_and_ports=host_and_ports,
-            use_ssl=use_ssl,
-            heartbeats=(60000, 60000)
-        )
+        self.host_and_ports = host_and_ports
+        self.use_ssl = use_ssl
+        self.heartbeat = heartbeat
         self.listener = listener if listener else Listener
+        self.wait = wait
+        self.connection = stomp.Connection(host_and_ports=self.host_and_ports, use_ssl=self.use_ssl, heartbeats=self.heartbeat)
+        self.connect()
 
-    def connect(self, wait: bool):
-        self.connection.set_listener("print", self.listener(self.mq_username, self.mq_password, self.mq_destination, self.connection, self.listener, wait))
+    def connect(self):
+        self.connection.set_listener("print", self.listener(self.mq_username, self.mq_password, self.host_and_ports, self.use_ssl, self.heartbeat, self.listener, self.wait))
         while not self.connection.is_connected():
             try:
                 self.connection.start()
-                self.connection.connect(self.mq_username, self.mq_password, wait=wait)
+                self.connection.connect(self.mq_username, self.mq_password, wait=self.wait)
             except Exception as e:
                 logging.error(f"[connect error]: {e}")
-                raise e
 
-    def send(self, message: str, wait: bool, headers=None):
-        self.connect(wait=wait)
+    def send(self, mq_destination: list, message: str, headers=None):
         message_sent = False
         retry_count = 0
         err = None
-        while (not message_sent) and (retry_count <= 3):
+        while not message_sent and retry_count <= 3:
             try:
-                for mq in self.mq_destination:
+                for mq in mq_destination:
                     self.connection.send(mq, message, headers=headers)
                     logging.info(f"[destination]: {mq}, [message]: {message}")
-                self.connection.disconnect()
                 message_sent = True
             except Exception as e:
                 retry_count += 1
@@ -70,7 +66,6 @@ class Connection(object):
             logging.error(f"[message]: {message}, [send error]: {err}")
             raise err
 
-    def receive(self, wait):
-        self.connect(wait=wait)
-        for mq in self.mq_destination:
+    def receive(self, mq_destination: list):
+        for mq in mq_destination:
             self.connection.subscribe(mq, "1")
