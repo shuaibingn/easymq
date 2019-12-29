@@ -50,22 +50,27 @@ class Connection(object):
                 logging.error(f"[connect error]: {e}")
 
     def send(self, mq_destination: list, message: str, headers=None):
-        message_sent = False
+        self.parse_message(mq_destination, message, headers)
+
+    def receive(self, mq_destination: list):
+        self.parse_message(mq_destination)
+
+    def parse_message(self, mq_destination: list, message=None, headers=None):
+        message_status = False
         retry_count = 0
         err = None
-        while not message_sent and retry_count <= 3:
+        while not message_status and retry_count <= 3:
             try:
                 for mq in mq_destination:
-                    self.connection.send(mq, message, headers=headers)
+                    if message:
+                        self.connection.send(mq, message, headers=headers)
+                    else:
+                        self.connection.subscribe(mq, "1")
                     logging.info(f"[destination]: {mq}, [message]: {message}")
-                message_sent = True
+                message_status = True
             except Exception as e:
                 retry_count += 1
                 err = e
-        if not message_sent and err:
-            logging.error(f"[message]: {message}, [send error]: {err}")
-            raise err
-
-    def receive(self, mq_destination: list):
-        for mq in mq_destination:
-            self.connection.subscribe(mq, "1")
+        if not message_status and err:
+            logging.error(f"message error with {err}")
+            return err
