@@ -29,7 +29,7 @@ setup(
         "easymq"
     ],
     platforms=["all"],
-    url="https://pypi.org/project/easymq/",
+    url="https://github.com/unknown-admin/easymq",
     install_requires=[
         "stomp.py",
         "docopt"
