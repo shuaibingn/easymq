@@ -44,7 +44,6 @@ class Connection(object):
         self.connection.set_listener("print", self.listener(self.mq_username, self.mq_password, self.host_and_ports, self.use_ssl, self.heartbeat, self.listener, self.wait))
         while not self.connection.is_connected():
             try:
-                self.connection.start()
                 self.connection.connect(self.mq_username, self.mq_password, wait=self.wait)
             except Exception as e:
                 logging.error(f"[connect error]: {e}")
