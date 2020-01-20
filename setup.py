@@ -8,7 +8,6 @@ if sys.version_info < (2, 5):
 with open("README.md", "r") as f:
     readme = f.read()
 
-# 版本号，自己随便写
 VERSION = "1.0.2"
 
 LICENSE = "apache"

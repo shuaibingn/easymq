@@ -1,22 +1,14 @@
 import logging
+import uuid
 import stomp
 
 
 class Listener(stomp.ConnectionListener):
 
-    def __init__(self, mq_username, mq_password, host_and_ports: list, use_ssl=True, heartbeat=(60000, 60000), listener=None, wait=True):
-        self.mq_username = mq_username
-        self.mq_password = mq_password
-        self.host_and_ports = host_and_ports
-        self.use_ssl = use_ssl
-        self.heartbeat = heartbeat
-        self.listener = listener if listener else Listener
-        self.wait = wait
-
     def on_connected(self, headers, body):
         logging.info(f"[mq on connected]: {headers}, {body}")
 
-    def on_message(self, headers, message):
+    def on_message(self, headers, body):
         pass
 
     def on_error(self, headers, body):
@@ -24,7 +16,6 @@ class Listener(stomp.ConnectionListener):
 
     def on_disconnected(self):
         logging.info("[mq on disconnected]")
-        Connection(self.mq_username, self.mq_password, self.host_and_ports, self.use_ssl, self.heartbeat, self.listener, self.wait)
 
 
 class Connection(object):
@@ -41,8 +32,8 @@ class Connection(object):
         self.connect()
 
     def connect(self):
-        self.connection.set_listener("print", self.listener(self.mq_username, self.mq_password, self.host_and_ports, self.use_ssl, self.heartbeat, self.listener, self.wait))
         while not self.connection.is_connected():
+            self.connection.set_listener("print", self.listener())
             try:
                 self.connection.connect(self.mq_username, self.mq_password, wait=self.wait)
             except Exception as e:
@@ -64,7 +55,7 @@ class Connection(object):
                     if message:
                         self.connection.send(mq, message, headers=headers)
                     else:
-                        self.connection.subscribe(mq, "1")
+                        self.connection.subscribe(mq, get_uuid())
                     logging.info(f"[destination]: {mq}, [message]: {message}")
                 message_status = True
             except Exception as e:
@@ -73,3 +64,7 @@ class Connection(object):
         if not message_status and err:
             logging.error(f"message error with {err}")
             return err
+
+
+def get_uuid() -> str:
+    return str(uuid.uuid4())
