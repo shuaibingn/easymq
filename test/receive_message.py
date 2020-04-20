@@ -1,16 +1,17 @@
-import time
+import threading
 
-from easymq.connect_mq import Connection, Listener
+from easymq.connect_mq import Connection
+from easymq.listener import MQListener, wait_forever
 
 
-class CustomListener(Listener):
+class CustomListener(MQListener):
 
     def on_message(self, headers, message):
         print("----->", message)
 
 
 if __name__ == '__main__':
-    a = Connection(mq_username="admin", mq_password="admin", host_and_ports=[("localhost", 61613)], use_ssl=False, listener=CustomListener)
-    while True:
-        a.receive(mq_destination=["/queue/collect_event", "/queue/collect.event"])
-        time.sleep(2)
+    c = Connection(mq_username="admin", mq_password="admin", host_and_ports=[("localhost", 61613)], dest="/queue/test", listener=CustomListener)
+    c.receive()
+    thread = threading.Thread(target=wait_forever, name="wait")
+    thread.start()
