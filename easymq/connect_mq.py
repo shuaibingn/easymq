@@ -1,5 +1,4 @@
 import logging
-import uuid
 import stomp
 
 
@@ -20,10 +19,12 @@ class Listener(stomp.ConnectionListener):
 
 class Connection(object):
 
-    def __init__(self, mq_username, mq_password, host_and_ports: list, use_ssl=True, heartbeat=(60000, 60000), listener=None, wait=True):
+    def __init__(self, mq_username, mq_password, host_and_ports: list, dest: str, use_ssl=False,
+                 heartbeat=(60000, 60000), listener=None, wait=True):
         self.mq_username = mq_username
         self.mq_password = mq_password
         self.host_and_ports = host_and_ports
+        self.dest = dest
         self.use_ssl = use_ssl
         self.heartbeat = heartbeat
         self.listener = listener if listener else Listener
@@ -39,24 +40,14 @@ class Connection(object):
             except Exception as e:
                 logging.error(f"[connect error]: {e}")
 
-    def send(self, mq_destination: list, message: str, headers=None):
-        self.parse_message(mq_destination, message, headers)
-
-    def receive(self, mq_destination: list):
-        self.parse_message(mq_destination)
-
-    def parse_message(self, mq_destination: list, message=None, headers=None):
+    def send(self, message: str, headers=None):
         message_status = False
         retry_count = 0
         err = None
         while not message_status and retry_count <= 3:
             try:
-                for mq in mq_destination:
-                    if message:
-                        self.connection.send(mq, message, headers=headers)
-                    else:
-                        self.connection.subscribe(mq, get_uuid())
-                    logging.info(f"[destination]: {mq}, [message]: {message}")
+                self.connection.send(self.dest, message, headers=headers)
+                logging.info(f"[destination]: {self.dest}, [message]: {message}")
                 message_status = True
             except Exception as e:
                 retry_count += 1
@@ -64,7 +55,7 @@ class Connection(object):
         if not message_status and err:
             logging.error(f"message error with {err}")
             return err
+        logging.info("send message success")
 
-
-def get_uuid() -> str:
-    return str(uuid.uuid4())
+    def receive(self, mq_destination: list):
+        pass
