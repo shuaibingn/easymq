@@ -8,7 +8,7 @@ if sys.version_info < (2, 5):
 with open("README.md", "r") as f:
     readme = f.read()
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 
 LICENSE = "apache"
 
@@ -16,7 +16,7 @@ setup(
     name="easymq",
     version=VERSION,
     description=(
-        "send message to activemq"
+        "easy to connect activemq"
     ),
     long_description=readme,
     author="unknown-admin",
