@@ -1,7 +1,5 @@
-import threading
-
 from easymq.connect_mq import Connection
-from easymq.listener import MQListener, wait_forever
+from easymq.listener import MQListener
 
 
 class CustomListener(MQListener):
@@ -11,7 +9,11 @@ class CustomListener(MQListener):
 
 
 if __name__ == '__main__':
-    c = Connection(mq_username="admin", mq_password="admin", host_and_ports=[("localhost", 61613)], dest="/queue/test", listener=CustomListener)
+    c = Connection(
+        mq_username="admin",
+        mq_password="admin",
+        host_and_ports=[("localhost", 61613)],
+        dest="/queue/test",
+        listener=CustomListener
+    )
     c.receive()
-    thread = threading.Thread(target=wait_forever, name="wait")
-    thread.start()
