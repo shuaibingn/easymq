@@ -1,7 +1,8 @@
 import logging
 import stomp
+import threading
 
-from easymq.listener import MQListener
+from easymq.listener import MQListener, wait_forever
 
 
 class Connection(object):
@@ -15,7 +16,8 @@ class Connection(object):
             use_ssl=False,
             heartbeat=(60000, 60000),
             listener=None,
-            wait=True):
+            wait=True
+    ):
         self.mq_username = mq_username
         self.mq_password = mq_password
         self.host_and_ports = host_and_ports
@@ -53,5 +55,7 @@ class Connection(object):
     def receive(self):
         try:
             self.connection.subscribe(self.dest, "id")
+            thread = threading.Thread(target=wait_forever, name="wait")
+            thread.start()
         except Exception as e:
             logging.fatal(f"receive message error with {e}")
