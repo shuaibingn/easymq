@@ -5,7 +5,7 @@ from setuptools import setup
 if sys.version_info < (2, 5):
     sys.exit("Python 3.5 or greater is required.")
 
-with open("README.md", "r") as f:
+with open("README.md", "r", encoding="utf-8") as f:
     readme = f.read()
 
 VERSION = "2.0.2"
@@ -19,7 +19,7 @@ setup(
         "easy to connect activemq"
     ),
     long_description=readme,
-    long_description_conteent_type="text/markdown",
+    long_description_content_type="text/markdown",
     author="unknown-admin",
     author_email="niushuaibing@foxmail.com",
     maintainer="eric",
