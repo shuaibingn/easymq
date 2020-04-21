@@ -8,7 +8,7 @@ if sys.version_info < (2, 5):
 with open("README.md", "r") as f:
     readme = f.read()
 
-VERSION = "1.0.2"
+VERSION = "2.0.0"
 
 LICENSE = "apache"
 
@@ -21,14 +21,14 @@ setup(
     long_description=readme,
     author="unknown-admin",
     author_email="niushuaibing@foxmail.com",
-    maintainer="unknown-admin",
+    maintainer="eric",
     maintainer_email="niushuaibing@foxmail.com",
     license=LICENSE,
     packages=[
         "easymq"
     ],
     platforms=["all"],
-    url="https://github.com/unknown-admin/easymq",
+    url="https://github.com/localhost-sys/easymq",
     install_requires=[
         "stomp.py",
         "docopt"
