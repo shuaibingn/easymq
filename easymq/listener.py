@@ -20,5 +20,20 @@ class MQListener(stomp.ConnectionListener):
         logging.info('on disconnected')
 
 
+class ReconnectListener(MQListener):
+
+    def on_message(self, headers, body):
+        pass
+
+    def on_connected(self, headers, body):
+        pass
+
+    def on_error(self, headers, body):
+        pass
+
+    def on_disconnected(self):
+        pass
+
+
 def wait_forever():
     event.wait()
