@@ -1,7 +1,6 @@
 import asyncio
 
 from easymq.listener import MQListener
-from easymq.log import log_control
 
 
 class MQ:
@@ -18,8 +17,7 @@ class MQ:
             heartbeats
         )
 
-    @log_control
-    def receive(self, logger=False):
+    def receive(self):
         self.mq_listener.set_message_callback(self.message_callback)
         self.event_loop.create_task(self.mq_listener.run_forever())
         self.event_loop.run_forever()
@@ -32,6 +30,5 @@ class MQ:
         self.func(headers, body)
         return True
 
-    @log_control
-    def send(self, message, logger=False):
+    def send(self, message):
         self.mq_listener.send(message)
