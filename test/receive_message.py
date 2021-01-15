@@ -1,19 +1,19 @@
-from easymq.connect_mq import Connection
-from easymq.listener import MQListener
+from easymq.mq import MQ
 
 
-class CustomListener(MQListener):
-
-    def on_message(self, headers, message):
-        print("----->", message)
+def receive(headers, body):
+    print(headers, body)
 
 
-if __name__ == '__main__':
-    c = Connection(
-        mq_username="admin",
-        mq_password="admin",
-        host_and_ports=[("localhost", 61613)],
-        dest="/queue/test",
-        listener=CustomListener
-    )
-    c.receive()
+mq = MQ(
+    mq_user="root",
+    password="root1234",
+    host_and_ports=[
+        ("localhost", 61613),
+        ("localhost", 61613)
+    ],
+    func=receive,
+    queue_name="/queue/test_queue",
+)
+
+mq.receive()
